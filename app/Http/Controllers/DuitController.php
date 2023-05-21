@@ -152,9 +152,14 @@ class DuitController extends Controller
         });
     }
 
-    public function editMoneyTrack(Request $request)
+    public function updateMoneyTrack(Request $request, $id=null)
     {
-        $track = MoneyTrack::find($request->id);
+        if(! empty($id)) {
+            $track = MoneyTrack::find($id);
+        } else {
+            $track = new MoneyTrack();
+        } // endif
+
         $isExpense = $request->is_expense === "1";
         $amount = intval($request->amount);
         $amount = $isExpense ? abs($amount) * -1 : $amount;
@@ -163,9 +168,23 @@ class DuitController extends Controller
             'description' => $request->description,
             'trx_date' => $request->trx_date
         ];
-        $track->update($updateArr);
+        collect($updateArr)->each(function ($item, $key) use ($track) {
+            $track->{$key} = $item;
+        });
+        $track->save();
         return redirect()->back();
 
+    }
+
+    public function editMoneyTrack(Request $request)
+    {
+        $id = $request->id;
+        return $this->updateMoneyTrack($request, $id);
+    }
+
+    public function addMoneyTrack(Request $request)
+    {
+        return $this->updateMoneyTrack($request, null);
     }
 
     public function deleteMoneyTrack(Request $request)

@@ -3,21 +3,6 @@
 @section('content')
     <div class="container mt-4" x-data="dashboard">
         <h3 role="button" @click="goto('/')">Dashboard</h3>
-        <div class="row gap-3 mt-4 mx-auto">
-            <div class="col border border-danger rounded rounded-1 p-2">
-                <small class="fw-bold">Total Pengeluaran</small>
-                <div class="text-danger">{{ $expense }}</div>
-            </div>
-            <div class="col border border-success rounded rounded-1 p-2">
-                <small class="fw-bold">Total Pemasukan</small>
-                <div class="text-success">{{ $income }}</div>
-            </div>
-            <div class="col border border-primary rounded rounded-1 p-2">
-                <small class="fw-bold">Sisa Saldo</small>
-                <div class="text-primary">{{ $balance }}</div>
-            </div>
-        </div>
-
         <div class="mt-4 d-flex justify-content-end" @click="syncToday">
             <button type="button" class="btn btn-primary">
                 <i class="bi bi-cloud-haze2"></i>
@@ -25,10 +10,27 @@
                 <span x-show="isSyncing">Loading ...</span>
             </button>
         </div>
-        <div class="mt-4 alert alert-danger" x-show="errMsg">
-            <span x-text="errMsg"></span>
+        <template x-if="errMsg">
+            <div class="mt-4 alert alert-danger">
+                <span x-text="errMsg"></span>
+            </div>
+        </template>
+        <div class="row gap-3 mt-4 mx-auto">
+            <div class="col border border-danger rounded rounded-1 py-2 px-3">
+                <small class="fw-bold">Pengeluaran Bulan Ini</small>
+                <div class="fs-5 text-danger">{{ $expense }}</div>
+            </div>
+            <div class="col border border-success rounded rounded-1 py-2 px-3">
+                <small class="fw-bold">Pemasukan Bulan Ini</small>
+                <div class="fs-5 text-success">{{ $income }}</div>
+            </div>
+            <div class="col border border-primary rounded rounded-1 py-2 px-3">
+                <small class="fw-bold">Saldo Bulan Ini</small>
+                <div class="fs-5 text-primary">{{ $balance }}</div>
+            </div>
         </div>
-        <form class="mt-1 row">
+
+        <form class="mt-4 row">
             <div class="col-4">
                 <div class="input-group">
                     <input type="month" class="form-control"
@@ -36,11 +38,16 @@
                         value="{{ $req_month }}"
                         lang="id-ID"
                         placeholder="Pilih Bulan" role="button" />
-                    <button type="submit" class="btn btn-secondary">Pilih Bulan</button>
+                    <button type="submit" class="btn btn-primary">Pilih Bulan</button>
                 </div>
             </div>
-            <div class="col-4">
-
+            <div class="col-8 d-flex justify-content-end gap-2">
+                <button type="button"
+                    data-bs-toggle="modal" data-bs-target="#editModal"
+                    class="btn btn-success" @click="newTrx(0)">+ Pemasukan</button>
+                <button type="button"
+                    data-bs-toggle="modal" data-bs-target="#editModal"
+                    class="btn btn-danger" @click="newTrx(1)">+ Pengeluaran</button>
             </div>
         </form>
         <table class="table table-hover table-responsive mt-4">
@@ -95,9 +102,9 @@
                         Data ini akan dihapus, apakah anda yakin?
                         <div>Waktu: <span x-text="modalTrx?.trx_date_format"></span></div>
                         <div>Nominal: <span x-text="modalTrx?.amount_format"
-                            :class="modalTrx.is_expense ? 'text-danger' : 'text-success'"></span></div>
-                        <div>Tipe: <span x-text="modalTrx?.is_expense ? 'Pengeluaran' : 'Pemasukan'"
-                            :class="modalTrx?.is_expense ? 'text-danger' : 'text-success'"></span></div>
+                            :class="getTextColor(modalTrx)"></span></div>
+                        <div>Tipe: <span x-text="getTextKind(modalTrx)"
+                            :class="getTextColor(modalTrx)"></span></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -113,14 +120,21 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">Edit Item</h1>
+                    <h1 class="modal-title fs-5" id="exampleModalLabel"
+                        x-text="modalKind == 'add' ? 'Tambah Baru' : 'Edit Item'">Edit Item</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form x-ref="editform" method="post" action="{{ url('/edit') }}">
+                    <form x-ref="editform" method="post" :action="modalKind == 'add' ? '/add' : '/edit'">
                         @csrf
                         <input type="hidden" name="id" :value="modalTrx?.id">
                         <input type="hidden" name="is_expense" :value="modalTrx?.is_expense ? 1 : 0">
+                        <div class="row mb-3 align-items-center">
+                            <label class="col-sm-2 col-form-label">Tipe</label>
+                            <div class="col-sm-10">
+                                <span x-text="getTextKind(modalTrx)" :class="getTextColor(modalTrx)"></span>
+                            </div>
+                        </div>
                         <div class="row mb-3">
                             <label class="col-sm-2 col-form-label">Waktu</label>
                             <div class="col-sm-10">
@@ -131,7 +145,7 @@
                         <div class="row mb-3">
                             <label class="col-sm-2 col-form-label">Nominal</label>
                             <div class="col-sm-10">
-                                <input type="number" name="amount"
+                                <input type="number" name="amount" min="1"
                                     class="form-control" :value="modalTrx?.amount" required>
                             </div>
                         </div>
@@ -146,7 +160,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                    <button type="button" class="btn btn-primary" @click="$refs.editform.submit()">Simpan</button>
+                    <button type="button" class="btn btn-primary"
+                        {{-- @click="$refs.editform.submit()" --}}
+                        @click="submitForm($refs.editform)"
+                        >Simpan</button>
                 </div>
                 </div>
             </div>

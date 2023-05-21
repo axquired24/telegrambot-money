@@ -4,7 +4,7 @@ function dashboard() {
         errMsg: null,
         transactions: transactions,
         modalTrx: {},
-        modalKind: 'edit', // edit, delete
+        modalKind: 'edit', // edit, delete, add
         errSync: function(err) {
             this.isSyncing = false;
             this.errMsg = 'Error saat sinkronisasi, cek log untuk detail.'
@@ -31,7 +31,40 @@ function dashboard() {
         setModalTrx: function(trx, kind='edit') {
             this.modalTrx = trx
             this.modalKind = kind
-            console.log(this.modalKind, this.modalTrx)
+        },
+        getTextColor: function (trx) {
+            return trx.is_expense ? 'text-danger' : 'text-success'
+        },
+        getTextKind: function (trx) {
+            return trx.is_expense ? 'Pengeluaran' : 'Pemasukan'
+        },
+        getToday: function() {
+            const today = new Date();
+            const dd = String(today.getDate()).padStart(2, '0');
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+            const yyyy = today.getFullYear();
+
+            return [yyyy, mm, dd].join('-')
+        },
+        newTrx: function(is_expense=1) {
+            const modalTrx = {
+                is_expense: is_expense,
+                amount: 0,
+                description: '',
+                trx_date: this.getToday()
+            }
+            this.setModalTrx(modalTrx, 'add');
+        },
+        submitForm: function (ref) {
+            if (!ref.checkValidity()) {
+                if (ref.reportValidity) {
+                    ref.reportValidity()
+                } else {
+                    //warn IE users somehow
+                }
+            } else {
+                ref.submit()
+            }
         }
     }
 }
