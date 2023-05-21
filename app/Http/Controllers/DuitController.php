@@ -151,4 +151,27 @@ class DuitController extends Controller
             return $row->update_id . $result;
         });
     }
+
+    public function editMoneyTrack(Request $request)
+    {
+        $track = MoneyTrack::find($request->id);
+        $isExpense = $request->is_expense === "1";
+        $amount = intval($request->amount);
+        $amount = $isExpense ? abs($amount) * -1 : $amount;
+        $updateArr = [
+            'amount' => $amount,
+            'description' => $request->description,
+            'trx_date' => $request->trx_date
+        ];
+        $track->update($updateArr);
+        return redirect()->back();
+
+    }
+
+    public function deleteMoneyTrack(Request $request)
+    {
+        $track = MoneyTrack::find($request->id);
+        $track->delete();
+        return redirect()->back();
+    }
 }

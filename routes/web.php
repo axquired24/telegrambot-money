@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ViewController;
+use App\Http\Controllers\DuitController;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,3 +16,5 @@ use App\Http\Controllers\ViewController;
 */
 
 Route::get('/', [ViewController::class, 'index']);
+Route::post('/edit', [DuitController::class, 'editMoneyTrack']);
+Route::post('/delete', [DuitController::class, 'deleteMoneyTrack']);

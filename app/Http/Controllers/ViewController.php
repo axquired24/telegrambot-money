@@ -24,7 +24,9 @@ class ViewController extends Controller
         $fullDate = Carbon::createFromFormat('Y-m', $req_month);
         $list = MoneyTrack::whereMonth('trx_date', $fullDate->month)
             ->whereYear('trx_date', $fullDate->year)
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('trx_date', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
         $list = $list->map(function($item) {
             $item->amount_format = $this->rupiahFormat($item->amount, true);
             $item->trx_date_format = Carbon::parse($item->trx_date)->format('d F Y');
@@ -37,11 +39,12 @@ class ViewController extends Controller
             return ! $item->is_expense;
         })->pluck('amount')->sum();
         $balance = $income - $expense;
+        $list_json = $list->toJson();
 
         $balance = $this->rupiahFormat($balance, true);
         $income = $this->rupiahFormat($income, true);
         $expense = $this->rupiahFormat($expense, true);
 
-        return view('dashboard', compact('list', 'expense', 'income', 'balance', 'req_month'));
+        return view('dashboard', compact('list', 'list_json', 'expense', 'income', 'balance', 'req_month'));
     }
 }

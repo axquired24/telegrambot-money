@@ -2,7 +2,9 @@ function dashboard() {
     return {
         isSyncing: false,
         errMsg: null,
-
+        transactions: transactions,
+        modalTrx: {},
+        modalKind: 'edit', // edit, delete
         errSync: function(err) {
             this.isSyncing = false;
             this.errMsg = 'Error saat sinkronisasi, cek log untuk detail.'
@@ -22,6 +24,14 @@ function dashboard() {
             }).catch(err => {
                 self.errSync()
             })
+        },
+        goto: function(path) {
+            window.location.href = path
+        },
+        setModalTrx: function(trx, kind='edit') {
+            this.modalTrx = trx
+            this.modalKind = kind
+            console.log(this.modalKind, this.modalTrx)
         }
     }
 }
