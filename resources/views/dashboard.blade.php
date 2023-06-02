@@ -66,8 +66,11 @@
                     </select>
                 </div>
             </div>
-            <div class="col-4 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Filter</button>
+            <div class="col-4 d-flex gap-2 justify-content-between">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel-fill"></i>
+                    <span>Filter</span>
+                </button>
                 <button type="button" class="btn btn-secondary" @click="sendReport">
                     <i class="bi bi-chat-right-dots-fill"></i>
                     <span x-show="! isSendingReport">Kirim Laporan</span>

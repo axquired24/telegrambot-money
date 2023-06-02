@@ -120,14 +120,14 @@ class DuitController extends Controller
             $multiData = explode(PHP_EOL, $msg->text);
             $hasEmptyAmount = false;
 
-            $from = From::firstOrCreate([
+            $from = From::updateOrCreate([
                 'id' => $msg->from->id
             ], [
                 'username' => $msg->from->username,
                 'first_name' => $msg->from->first_name ?? null,
                 'last_name' => $msg->from->last_name ?? null,
             ]);
-            $chatroom = Chatroom::firstOrCreate([
+            $chatroom = Chatroom::updateOrCreate([
                 'id' => $msg->chat->id,
             ], [
                 'type' => $msg->chat->type,
@@ -191,9 +191,10 @@ class DuitController extends Controller
 
     public function parseDailyUpdate()
     {
-        // $rows = TelegramUpdate::where('parsed_at', null)->get();
-        MoneyTrack::truncate();
-        $rows = TelegramUpdate::all();
+        // MoneyTrack::truncate();
+        // $rows = TelegramUpdate::all();
+
+        $rows = TelegramUpdate::where('parsed_at', null)->get();
         return $rows->map(function ($row) {
             $result = ' > 0 rows parsed, failed process';
             $parseResult = $this->parseTelegramMsg($row);
