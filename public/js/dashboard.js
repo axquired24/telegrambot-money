@@ -1,6 +1,8 @@
 function dashboard() {
     return {
         isSyncing: false,
+        isSendingReport: false,
+        reportMonth: yearMonth,
         errMsg: null,
         transactions: transactions,
         modalTrx: {},
@@ -23,6 +25,20 @@ function dashboard() {
                 });
             }).catch(err => {
                 self.errSync()
+            })
+        },
+        sendReport: async function () {
+            const self = this;
+            self.isSendingReport = true;
+            self.errMsg = null;
+            await axios.post('/api/bot/sendreport', {
+                bulan: self.reportMonth
+            }).then(() => {
+                self.isSendingReport = false
+                alert("Terkirim")
+            }).catch(err => {
+                self.isSendingReport = false
+                console.log(err)
             })
         },
         goto: function(path) {

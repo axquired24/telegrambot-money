@@ -19,3 +19,5 @@ Route::get('/', [ViewController::class, 'index']);
 Route::post('/edit', [DuitController::class, 'editMoneyTrack']);
 Route::post('/add', [DuitController::class, 'addMoneyTrack']);
 Route::post('/delete', [DuitController::class, 'deleteMoneyTrack']);
+Route::get('/invalidchat', [ViewController::class, 'invalidChat']);
+Route::post('/invalidchat/solved', [ViewController::class, 'solveInvalidChat']);

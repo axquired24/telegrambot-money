@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\MoneyTrack;
+use App\Models\From;
+use App\Models\Chatroom;
 use App\Models\TelegramUpdate;
 use Exception;
 use Telegram\Bot\Laravel\Facades\Telegram;
@@ -53,14 +55,20 @@ class DuitController extends Controller
         return $messages;
     }
 
-    public function sendReport()
+    public function sendReport(Request $request)
     {
-        $chatId = -941429400;
+        $req_month = empty($request->bulan) ? date('Y-m') : $request->bulan;
+        $summary = MoneyTrack::summaryByMonth($req_month);
+        $balance = $this->rupiahFormat($summary['balance'], true);
+        $income = $this->rupiahFormat($summary['income'], true);
+        $expense = $this->rupiahFormat($summary['expense'], true);
+
+        $chatId = config('telegram.send_chat_id');
         $lines = collect([
-            'Laporan Bulan Ini:',
-            '*Saldo: Rp 3.000*',
-            'Pengeluaran: Rp 10.000',
-            'Pemasukan: Rp 8.000'
+            "Laporan Bulan Ini:",
+            "*Saldo: {$balance}*",
+            "Pengeluaran: {$expense}",
+            "Pemasukan: {$income}"
         ]);
 
         $send = $this->bot->sendMessage([
@@ -90,26 +98,47 @@ class DuitController extends Controller
             $multiData = explode(PHP_EOL, $msg->text);
             $hasEmptyAmount = false;
 
-            $parseAll = collect($multiData)->map(function ($item) use ($msg, &$hasEmptyAmount) {
+            $from = From::firstOrCreate([
+                'id' => $msg->from->id
+            ], [
+                'username' => $msg->from->username,
+                'first_name' => $msg->from->first_name,
+                'last_name' => $msg->from->last_name,
+            ]);
+            $chatroom = Chatroom::firstOrCreate([
+                'id' => $msg->chat->id,
+            ], [
+                'type' => $msg->chat->type,
+                'title' => $msg->chat->title
+            ]);
+
+            $parseAll = collect($multiData)->map(function ($item) use (
+                $msg,
+                &$hasEmptyAmount,
+                $from,
+                $chatroom
+            ) {
                 $line = explode(' ', $item);
                 $description = collect($line)->filter(function ($val, $key) {
                     return $key > 0;
                 })->join(' ');
                 $amount = $this->parseShortCurrency($line[0]);
 
-                $prepare = [
+                $moneyTrack = [
                     'description' => $description,
                     'trx_date' => date('Y-m-d', $msg->date),
                     'created_at' => date('Y-m-d H:i:s', $msg->date),
                     'amount' => $amount,
-                    'is_expense' => $amount < 0
+                    'is_expense' => $amount < 0,
+                    'from_id' => $from->id,
+                    'chatroom_id' => $chatroom->id,
                 ];
 
                 if ($amount === 0) {
                     $hasEmptyAmount = true;
                 } // endif
 
-                return $prepare;
+                return $moneyTrack;
             });
 
             if ($hasEmptyAmount) {

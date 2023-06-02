@@ -45,6 +45,8 @@ return [
         //        ],
     ],
 
+    'send_chat_id' => env('TELEGRAM_SEND_CHAT_ID', 0),
+
     /*
     |--------------------------------------------------------------------------
     | Default Bot Name

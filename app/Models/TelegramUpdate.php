@@ -14,8 +14,15 @@ class TelegramUpdate extends Model
      * @var string[]
      */
     protected $fillable = [
-        'update_id', 'message', 'parsed_at', 'has_error'
+        'update_id', 'message', 'parsed_at', 'has_error', 'error_solved'
     ];
 
     public $timestamps = false;
+
+    public static function unsolvedErrors() {
+        return self::where([
+            ['has_error', 1],
+            ['error_solved', 0]
+        ]);
+    }
 }

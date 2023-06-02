@@ -20,6 +20,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 // Route::get('money/check', [DuitController::class, 'index']);
 // Route::get('bot/check', [DuitController::class, 'botCheck']);
-Route::get('bot/sendreport', [DuitController::class, 'sendReport']);
+Route::post('bot/sendreport', [DuitController::class, 'sendReport']);
 Route::get('bot/daily', [DuitController::class, 'recordDailyMessages']);
 Route::get('db/parse', [DuitController::class, 'parseDailyUpdate']);

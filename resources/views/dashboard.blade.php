@@ -3,11 +3,16 @@
 @section('content')
     <div class="container mt-4" x-data="dashboard">
         <h3 role="button" @click="goto('/')">Dashboard</h3>
-        <div class="mt-4 d-flex justify-content-end" @click="syncToday">
+        <div class="mt-4 d-flex justify-content-end gap-2" @click="syncToday">
             <button type="button" class="btn btn-primary">
                 <i class="bi bi-cloud-haze2"></i>
                 <span x-show="! isSyncing">Perbarui dari Telegram</span>
                 <span x-show="isSyncing">Loading ...</span>
+            </button>
+            <button class="btn btn-secondary" @click="sendReport">
+                <i class="bi bi-chat-right-dots-fill"></i>
+                <span x-show="! isSendingReport">Kirim Laporan</span>
+                <span x-show="isSendingReport">Loading ...</span>
             </button>
         </div>
         <template x-if="errMsg">
@@ -27,6 +32,12 @@
             <div class="col border border-primary rounded rounded-1 py-2 px-3">
                 <small class="fw-bold">Saldo Bulan Ini</small>
                 <div class="fs-5 text-primary">{{ $balance }}</div>
+            </div>
+            <div role="button"
+                @click="goto('/invalidchat')"
+                class="col border border-danger rounded rounded-1 py-2 px-3">
+                <small class="fw-bold">Invalid Chat</small>
+                <div class="fs-5 text-danger">{{ $failed_parsed }} item</div>
             </div>
         </div>
 
@@ -176,6 +187,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         const transactions = {!! $list_json !!}
+        const yearMonth = {!! json_encode(request()->bulan) !!}
     </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
 @endpush
