@@ -9,10 +9,13 @@
                 <span x-show="! isSyncing">Perbarui dari Telegram</span>
                 <span x-show="isSyncing">Loading ...</span>
             </button>
-            <button class="btn btn-secondary" @click="sendReport">
-                <i class="bi bi-chat-right-dots-fill"></i>
-                <span x-show="! isSendingReport">Kirim Laporan</span>
-                <span x-show="isSendingReport">Loading ...</span>
+            <button type="button"
+                data-bs-toggle="modal" data-bs-target="#editModal"
+                class="btn btn-success" @click="newTrx(0)">+ Pemasukan
+            </button>
+            <button type="button"
+                data-bs-toggle="modal" data-bs-target="#editModal"
+                class="btn btn-danger" @click="newTrx(1)">+ Pengeluaran
             </button>
         </div>
         <template x-if="errMsg">
@@ -42,23 +45,34 @@
         </div>
 
         <form class="mt-4 row">
-            <div class="col-4">
-                <div class="input-group">
+            <div class="col-8">
+                <div class="d-flex gap-2">
                     <input type="month" class="form-control"
                         name="bulan"
                         value="{{ $req_month }}"
                         lang="id-ID"
                         placeholder="Pilih Bulan" role="button" />
-                    <button type="submit" class="btn btn-primary">Pilih Bulan</button>
+                    <select x-ref="fromFilter" class="form-control" name="from" placeholder="Pengirim">
+                        <option value="">Semua Pengirim</option>
+                        @foreach ($froms as $fr)
+                            <option value="{{ $fr->id }}">{{ $fr->username }}</option>
+                        @endforeach
+                    </select>
+                    <select x-ref="chatroomFilter" class="form-control" name="chatroom" placeholder="Chatroom">
+                        <option value="">Semua Chatroom</option>
+                        @foreach ($chatrooms as $cr)
+                            <option value="{{ $cr->id }}">{{ $cr->title }}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
-            <div class="col-8 d-flex justify-content-end gap-2">
-                <button type="button"
-                    data-bs-toggle="modal" data-bs-target="#editModal"
-                    class="btn btn-success" @click="newTrx(0)">+ Pemasukan</button>
-                <button type="button"
-                    data-bs-toggle="modal" data-bs-target="#editModal"
-                    class="btn btn-danger" @click="newTrx(1)">+ Pengeluaran</button>
+            <div class="col-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <button type="button" class="btn btn-secondary" @click="sendReport">
+                    <i class="bi bi-chat-right-dots-fill"></i>
+                    <span x-show="! isSendingReport">Kirim Laporan</span>
+                    <span x-show="isSendingReport">Loading ...</span>
+                </button>
             </div>
         </form>
         <table class="table table-hover table-responsive mt-4">
@@ -68,6 +82,7 @@
                 <th>Nominal</th>
                 <th>Deskripsi</th>
                 <th>Tipe</th>
+                <th>Sender</th>
                 <th>Aksi</th>
             </thead>
             <tbody>
@@ -79,6 +94,7 @@
                         <td x-text="trx.is_expense ? 'Pengeluaran' : 'Pemasukan'"
                             :class="trx.is_expense ? 'text-danger' : 'text-success'"
                         ></td>
+                        <td x-text="trx.from.username"></td>
                         <td>
                             <button type="button" @click="setModalTrx(trx, 'edit')"
                                 data-bs-toggle="modal" data-bs-target="#editModal"
@@ -188,6 +204,8 @@
     <script>
         const transactions = {!! $list_json !!}
         const yearMonth = {!! json_encode(request()->bulan) !!}
+        const fromParam = {!! json_encode(request()->from) !!}
+        const chatroomParam = {!! json_encode(request()->chatroom) !!}
     </script>
     <script src="{{ asset('js/dashboard.js') }}"></script>
 @endpush

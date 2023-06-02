@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 class MoneyTrack extends Model
 {
     use SoftDeletes;
@@ -35,8 +36,10 @@ class MoneyTrack extends Model
             ->orderBy('id', 'desc');
     }
 
-    public static function summaryByMonth($yearMonth=null) {
-        $list = self::listByMonth($yearMonth)->get();
+    public static function summaryByMonth($yearMonth=null, $list=null) {
+        if (empty($list)) {
+            $list = self::listByMonth($yearMonth)->get();
+        } // endif
 
         $expense = $list->filter(function($item) {
             return $item->is_expense;

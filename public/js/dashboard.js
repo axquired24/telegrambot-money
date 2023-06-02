@@ -7,6 +7,10 @@ function dashboard() {
         transactions: transactions,
         modalTrx: {},
         modalKind: 'edit', // edit, delete, add
+        init: function () {
+            this.$refs.fromFilter.value = fromParam ?? ''
+            this.$refs.chatroomFilter.value = chatroomParam ?? ''
+        },
         errSync: function(err) {
             this.isSyncing = false;
             this.errMsg = 'Error saat sinkronisasi, cek log untuk detail.'
@@ -29,10 +33,16 @@ function dashboard() {
         },
         sendReport: async function () {
             const self = this;
+            if(! (fromParam && chatroomParam)) {
+                alert('Filter Pengirim dan Chatroom dahulu.')
+            } // endif
+
             self.isSendingReport = true;
             self.errMsg = null;
             await axios.post('/api/bot/sendreport', {
-                bulan: self.reportMonth
+                bulan: self.reportMonth,
+                from: fromParam,
+                chatroom: chatroomParam
             }).then(() => {
                 self.isSendingReport = false
                 alert("Terkirim")

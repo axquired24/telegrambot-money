@@ -10,7 +10,7 @@ use App\Models\TelegramUpdate;
 use Exception;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Carbon;
 
 class DuitController extends Controller
 {
@@ -18,6 +18,16 @@ class DuitController extends Controller
     function __construct()
     {
         $this->bot = Telegram::bot('mybot');
+    }
+
+    private function rupiahFormat($angka, $minusValue=false)
+    {
+
+        $final = "Rp" . number_format(abs($angka), 0,',','.');
+        if($minusValue && ($angka < 0)) {
+            $final = "-" . $final;
+        } // endif
+        return $final;
     }
 
     public function index()
@@ -57,22 +67,34 @@ class DuitController extends Controller
 
     public function sendReport(Request $request)
     {
-        $req_month = empty($request->bulan) ? date('Y-m') : $request->bulan;
-        $summary = MoneyTrack::summaryByMonth($req_month);
+        $monthParam = empty($request->bulan) ? date('Y-m') : $request->bulan;
+        $fromParam = intval($request->from);
+        $chatroomParam = intval($request->chatroom);
+
+        $list = MoneyTrack::listByMonth($monthParam)
+            ->where('from_id', $fromParam)
+            ->where('chatroom_id', $chatroomParam)
+            ->get();
+
+        $from = From::find($request->from);
+
+        $summary = MoneyTrack::summaryByMonth($monthParam, $list);
         $balance = $this->rupiahFormat($summary['balance'], true);
         $income = $this->rupiahFormat($summary['income'], true);
         $expense = $this->rupiahFormat($summary['expense'], true);
+        $fullDate = Carbon::createFromFormat('Y-m', $monthParam)->format('F Y');
 
-        $chatId = config('telegram.send_chat_id');
         $lines = collect([
-            "Laporan Bulan Ini:",
+            "Hi, *{$from->username}*",
+            "Laporan Bulan *{$fullDate}*:",
+            "",
             "*Saldo: {$balance}*",
             "Pengeluaran: {$expense}",
             "Pemasukan: {$income}"
         ]);
 
         $send = $this->bot->sendMessage([
-            'chat_id' => $chatId,
+            'chat_id' => $request->chatroom,
             'text' => $lines->join(PHP_EOL),
             'parse_mode' => 'markdown'
         ]);
@@ -102,8 +124,8 @@ class DuitController extends Controller
                 'id' => $msg->from->id
             ], [
                 'username' => $msg->from->username,
-                'first_name' => $msg->from->first_name,
-                'last_name' => $msg->from->last_name,
+                'first_name' => $msg->from->first_name ?? null,
+                'last_name' => $msg->from->last_name ?? null,
             ]);
             $chatroom = Chatroom::firstOrCreate([
                 'id' => $msg->chat->id,
@@ -169,7 +191,9 @@ class DuitController extends Controller
 
     public function parseDailyUpdate()
     {
-        $rows = TelegramUpdate::where('parsed_at', null)->get();
+        // $rows = TelegramUpdate::where('parsed_at', null)->get();
+        MoneyTrack::truncate();
+        $rows = TelegramUpdate::all();
         return $rows->map(function ($row) {
             $result = ' > 0 rows parsed, failed process';
             $parseResult = $this->parseTelegramMsg($row);

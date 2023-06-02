@@ -11,6 +11,9 @@ function dashboard() {
             this.chatDetail = chat
             console.log("setChatDetail", chat)
         },
+        beautifyJson: function(json) {
+            return JSON.stringify(JSON.parse(json), undefined, 2)
+        },
         getToday: function() {
             const today = new Date();
             const dd = String(today.getDate()).padStart(2, '0');

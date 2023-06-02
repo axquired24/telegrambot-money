@@ -47,7 +47,7 @@
                         <input type="hidden" name="error_solved" value="1">
                     </form>
 
-                    <pre class="h-32" x-text="JSON.stringify(JSON.parse(chatDetail?.message), undefined, 2)"></pre>
+                    <pre class="h-32" x-text="beautifyJson(chatDetail?.message)"></pre>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
