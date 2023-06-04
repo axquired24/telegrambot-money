@@ -92,11 +92,9 @@
                 <template x-for="trx in transactions">
                     <tr>
                         <td x-text="trx.trx_date_format"></td>
-                        <td x-text="trx.amount_format" :class="trx.is_expense ? 'text-danger' : 'text-success'"></td>
+                        <td x-text="trx.amount_format" :class="getTextColor(trx)"></td>
                         <td x-text="trx.description"></td>
-                        <td x-text="trx.is_expense ? 'Pengeluaran' : 'Pemasukan'"
-                            :class="trx.is_expense ? 'text-danger' : 'text-success'"
-                        ></td>
+                        <td x-text="getTextKind(trx)" :class="getTextColor(trx)"></td>
                         <td x-text="trx.from.username"></td>
                         <td>
                             <button type="button" @click="setModalTrx(trx, 'edit')"
@@ -158,7 +156,7 @@
                     <form x-ref="editform" method="post" :action="modalKind == 'add' ? '/add' : '/edit'">
                         @csrf
                         <input type="hidden" name="id" :value="modalTrx?.id">
-                        <input type="hidden" name="is_expense" :value="modalTrx?.is_expense ? 1 : 0">
+                        <input type="hidden" name="is_expense" :value="modalTrx?.is_expense">
                         <div class="row mb-3 align-items-center">
                             <label class="col-sm-2 col-form-label">Tipe</label>
                             <div class="col-sm-10">

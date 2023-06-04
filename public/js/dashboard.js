@@ -59,10 +59,10 @@ function dashboard() {
             this.modalKind = kind
         },
         getTextColor: function (trx) {
-            return trx.is_expense ? 'text-danger' : 'text-success'
+            return trx.is_expense == 1 ? 'text-danger' : 'text-success'
         },
         getTextKind: function (trx) {
-            return trx.is_expense ? 'Pengeluaran' : 'Pemasukan'
+            return trx.is_expense == 1 ? 'Pengeluaran' : 'Pemasukan'
         },
         getToday: function() {
             const today = new Date();
