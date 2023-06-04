@@ -23,3 +23,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('bot/sendreport', [DuitController::class, 'sendReport']);
 Route::get('bot/daily', [DuitController::class, 'recordDailyMessages']);
 Route::get('db/parse', [DuitController::class, 'parseDailyUpdate']);
+Route::get('webhook/set', [DuitController::class, 'setWebHook']);
+Route::post('webhook/callback', [DuitController::class, 'webhookCallback']);
