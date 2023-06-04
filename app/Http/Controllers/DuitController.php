@@ -49,7 +49,7 @@ class DuitController extends Controller
     }
 
     public function setWebHook() {
-        $response = Telegram::setWebhook(['url' => 'https://webhook.site/d99f735c-183d-4cb2-b1dd-e8f8a644fb1c']);
+        $response = Telegram::setWebhook(['url' => url('api/webhook/callback')]);
         return $response;
     }
 
