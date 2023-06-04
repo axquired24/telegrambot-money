@@ -24,4 +24,5 @@ Route::post('bot/sendreport', [DuitController::class, 'sendReport']);
 Route::get('bot/daily', [DuitController::class, 'recordDailyMessages']);
 Route::get('db/parse', [DuitController::class, 'parseDailyUpdate']);
 Route::get('webhook/set', [DuitController::class, 'setWebHook']);
+Route::get('webhook/unset', [DuitController::class, 'unsetWebHook']);
 Route::post('webhook/callback', [DuitController::class, 'webhookCallback']);

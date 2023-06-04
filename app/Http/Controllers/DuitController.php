@@ -53,6 +53,11 @@ class DuitController extends Controller
         return $response;
     }
 
+    public function unsetWebHook() {
+        $response = Telegram::removeWebhook();
+        return $response;
+    }
+
     private function recordTelegramUpdate($msg)
     {
         $row = [
@@ -65,9 +70,9 @@ class DuitController extends Controller
     public function recordDailyMessages()
     {
         // use 1st option if no webhook set
-        // $messages = $this->bot->getUpdates();
+        $messages = $this->bot->getUpdates();
 
-        $messages = $this->bot->getWebhookUpdate();
+        // $messages = $this->bot->getWebhookUpdate();
         collect($messages)
         ->filter(function ($msg) {
             return ! empty($msg->message);
