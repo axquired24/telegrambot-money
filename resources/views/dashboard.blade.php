@@ -4,11 +4,11 @@
     <div class="container mt-4" x-data="dashboard">
         <h3 role="button" @click="goto('/')">Dashboard</h3>
         <div class="mt-4 d-flex justify-content-end gap-2" @click="syncToday">
-            <button type="button" class="btn btn-primary">
+            {{-- <button type="button" class="btn btn-primary">
                 <i class="bi bi-cloud-haze2"></i>
                 <span x-show="! isSyncing">Perbarui dari Telegram</span>
                 <span x-show="isSyncing">Loading ...</span>
-            </button>
+            </button> --}}
             <button type="button"
                 data-bs-toggle="modal" data-bs-target="#editModal"
                 class="btn btn-success" @click="newTrx(0)">+ Pemasukan
@@ -44,74 +44,89 @@
             </div>
         </div>
 
-        <form class="mt-4 row">
-            <div class="col-8">
-                <div class="d-flex gap-2">
-                    <input type="month" class="form-control"
-                        name="bulan"
-                        value="{{ $req_month }}"
-                        lang="id-ID"
-                        placeholder="Pilih Bulan" role="button" />
-                    <select x-ref="fromFilter" class="form-control" name="from" placeholder="Pengirim">
-                        <option value="">Semua Pengirim</option>
-                        @foreach ($froms as $fr)
-                            <option value="{{ $fr->id }}">{{ $fr->username }}</option>
-                        @endforeach
-                    </select>
-                    <select x-ref="chatroomFilter" class="form-control" name="chatroom" placeholder="Chatroom">
-                        <option value="">Semua Chatroom</option>
-                        @foreach ($chatrooms as $cr)
-                            <option value="{{ $cr->id }}">{{ $cr->title }}</option>
-                        @endforeach
-                    </select>
+        <form class="mt-4 row g-2 align-items-end">
+            <div class="col-sm-12 col-xl-8">
+                <div class="row gap-0">
+                    <div class="col-4">
+                        <label>Bulan</label>
+                        <input type="month" class="form-control"
+                            name="bulan"
+                            value="{{ $req_month }}"
+                            lang="id-ID"
+                            placeholder="Pilih Bulan" role="button" />
+                    </div>
+                    <div class="col-4">
+                        <label>Pengirim</label>
+                        <select x-ref="fromFilter" class="form-control" name="from" placeholder="Pengirim">
+                            <option value="">Semua Pengirim</option>
+                            @foreach ($froms as $fr)
+                                <option value="{{ $fr->id }}">{{ $fr->username }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-4">
+                        <label>Grup</label>
+                        <select x-ref="chatroomFilter" class="form-control" name="chatroom" placeholder="Chatroom">
+                            <option value="">Semua Chatroom</option>
+                            @foreach ($chatrooms as $cr)
+                                <option value="{{ $cr->id }}">{{ $cr->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class="col-4 d-flex gap-2 justify-content-between">
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-funnel-fill"></i>
-                    <span>Filter</span>
-                </button>
-                <button type="button" class="btn btn-secondary" @click="sendReport">
-                    <i class="bi bi-chat-right-dots-fill"></i>
-                    <span x-show="! isSendingReport">Kirim Laporan</span>
-                    <span x-show="isSendingReport">Loading ...</span>
-                </button>
+            <div class="col-sm-12 col-xl-4 d-flex gap-2 justify-content-between">
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-funnel-fill"></i>
+                        <span>Filter</span>
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-secondary" @click="sendReport">
+                        <i class="bi bi-chat-right-dots-fill"></i>
+                        <span x-show="! isSendingReport">Kirim Laporan</span>
+                        <span x-show="isSendingReport">Loading ...</span>
+                    </button>
+                </div>
             </div>
         </form>
-        <table class="table table-hover table-responsive mt-4">
-            <caption>History Keuangan</caption>
-            <thead>
-                <th>Waktu</th>
-                <th>Nominal</th>
-                <th>Deskripsi</th>
-                <th>Tipe</th>
-                <th>Sender</th>
-                <th>Aksi</th>
-            </thead>
-            <tbody>
-                <template x-for="trx in transactions">
-                    <tr>
-                        <td x-text="trx.trx_date_format"></td>
-                        <td x-text="trx.amount_format" :class="getTextColor(trx)"></td>
-                        <td x-text="trx.description"></td>
-                        <td x-text="getTextKind(trx)" :class="getTextColor(trx)"></td>
-                        <td x-text="trx.from.username"></td>
-                        <td>
-                            <button type="button" @click="setModalTrx(trx, 'edit')"
-                                data-bs-toggle="modal" data-bs-target="#editModal"
-                                class="btn btn-sm btn-primary" title="Ubah">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button type="button"  @click="setModalTrx(trx, 'delete')"
-                                data-bs-toggle="modal" data-bs-target="#deleteModal"
-                                class="btn btn-sm btn-danger" title="Hapus">
-                                <i class="bi bi-trash3-fill"></i>
-                            </button>
-                        </td>
-                    </tr>
-                </template>
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-hover table-responsive mt-4" style="min-width: 800px; width: 100%">
+                <caption>History Keuangan</caption>
+                <thead>
+                    <th>Waktu</th>
+                    <th>Nominal</th>
+                    <th>Deskripsi</th>
+                    <th>Tipe</th>
+                    <th>Sender</th>
+                    <th>Aksi</th>
+                </thead>
+                <tbody>
+                    <template x-for="trx in transactions">
+                        <tr>
+                            <td x-text="trx.trx_date_format"></td>
+                            <td x-text="trx.amount_format" :class="getTextColor(trx)"></td>
+                            <td x-text="trx.description"></td>
+                            <td x-text="getTextKind(trx)" :class="getTextColor(trx)"></td>
+                            <td x-text="trx.from.username"></td>
+                            <td style="width: 100px">
+                                <button type="button" @click="setModalTrx(trx, 'edit')"
+                                    data-bs-toggle="modal" data-bs-target="#editModal"
+                                    class="btn btn-sm btn-primary" title="Ubah">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button type="button"  @click="setModalTrx(trx, 'delete')"
+                                    data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                    class="btn btn-sm btn-danger" title="Hapus">
+                                    <i class="bi bi-trash3-fill"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
 
         <!-- Delete Modal -->
         <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
