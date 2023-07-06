@@ -92,7 +92,7 @@
             </div>
         </form>
         <div class="table-responsive">
-            <table class="table table-hover table-responsive mt-4" style="min-width: 800px; width: 100%">
+            <table class="table table-hover table-striped table-responsive mt-4" style="min-width: 800px; width: 100%">
                 <caption>History Keuangan</caption>
                 <thead>
                     <th>Waktu</th>
