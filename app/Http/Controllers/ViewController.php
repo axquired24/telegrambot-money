@@ -80,4 +80,9 @@ class ViewController extends Controller
         $chat->save();
         return redirect()->back();
     }
+
+    public function indexLiveWire(Request $request)
+    {
+        return view('v2.index');
+    }
 }
