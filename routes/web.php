@@ -16,6 +16,7 @@ use App\Http\Controllers\DuitController;
 */
 
 Route::get('/', [ViewController::class, 'index']);
+Route::get('/v2/{slug?}', [ViewController::class, 'v2']);
 Route::post('/edit', [DuitController::class, 'editMoneyTrack']);
 Route::post('/add', [DuitController::class, 'addMoneyTrack']);
 Route::post('/delete', [DuitController::class, 'deleteMoneyTrack']);

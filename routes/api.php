@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DuitController;
+use App\Http\Controllers\ViewController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,3 +27,6 @@ Route::get('db/parse', [DuitController::class, 'parseDailyUpdate']);
 Route::get('webhook/set', [DuitController::class, 'setWebHook']);
 Route::get('webhook/unset', [DuitController::class, 'unsetWebHook']);
 Route::post('webhook/callback', [DuitController::class, 'webhookCallback']);
+
+Route::get('masterdata', [ViewController::class, 'getMasterData']);
+Route::post('money/list', [ViewController::class, 'getMoneyData']);

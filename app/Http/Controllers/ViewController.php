@@ -44,22 +44,70 @@ class ViewController extends Controller
         $chatrooms = Chatroom::all();
         $froms = From::all();
 
-        $from = From::all();
-        $chatroom = Chatroom::all();
-
-        $list = $list->each(function($item) use ($from, $chatroom) {
+        $list = $list->each(function($item) use ($froms, $chatrooms) {
             $item->amount_format = $this->rupiahFormat($item->amount, true);
             $item->trx_date_format = Carbon::parse($item->trx_date)->format('d F Y');
-            $item->from = $from->find($item->from_id);
+            $item->from = $froms->find($item->from_id);
             return $item;
         });
         $list_json = $list->toJson();
 
-        return view('dashboard', compact(
+        $viewData = compact(
             'list', 'list_json', 'expense', 'income',
             'balance', 'failed_parsed', 'req_month',
             'chatrooms', 'froms'
-        ));
+        );
+
+        return view('dashboard', $viewData);
+    }
+
+    public function v2(Request $request, $slug=null)
+    {
+        return view('v2');
+    }
+
+    public function getMasterData(Request $request)
+    {
+        $chatrooms = Chatroom::all();
+        $froms = From::all();
+        $bulan = date('Y-m');
+
+        return compact('chatrooms', 'froms', 'bulan');
+    }
+
+    public function getMoneyData(Request $request)
+    {
+        $bulan = empty($request->bulan) ? date('Y-m') : $request->bulan;
+        $list = MoneyTrack::listByMonth($bulan);
+
+        if (! empty($request->fromID)) {
+            $list = $list->where('from_id', $request->fromID);
+        } // endif
+        if (! empty($request->chatroomID)) {
+            $list = $list->where('chatroom_id', $request->chatroomID);
+        } // endif
+        $list = $list->get();
+
+        $summary = MoneyTrack::summaryByMonth($bulan, $list);
+        $balance = $this->rupiahFormat($summary['balance'], true);
+        $income = $this->rupiahFormat($summary['income'], true);
+        $expense = $this->rupiahFormat($summary['expense'], true);
+
+        $failedParsed = TelegramUpdate::unsolvedErrors()->count();
+        // $chatrooms = Chatroom::all();
+        $froms = From::all();
+
+        $list = $list->each(function($item) use ($froms) {
+            $item->amount_format = $this->rupiahFormat($item->amount, true);
+            $item->trx_date_format = Carbon::parse($item->trx_date)->format('d F Y');
+            $item->from = $froms->find($item->from_id);
+            return $item;
+        });
+
+        return [
+            'summary' => compact('expense', 'balance', 'income', 'failedParsed'),
+            'list' => $list
+        ];
     }
 
     public function invalidChat()
