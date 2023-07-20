@@ -281,7 +281,8 @@ class DuitController extends Controller
     {
         $track = MoneyTrack::find($request->id);
         $track->delete();
-        return redirect()->back();
+        return ['code' => 200];
+        // return redirect()->back();
     }
 
     public function webhookCallback(Request $request)

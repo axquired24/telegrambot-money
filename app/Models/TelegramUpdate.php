@@ -16,8 +16,19 @@ class TelegramUpdate extends Model
     protected $fillable = [
         'update_id', 'message', 'parsed_at', 'has_error', 'error_solved'
     ];
+    protected $appends = ['human_parsed_at'];
+    protected $casts = [
+        'parsed_at' => 'datetime'
+    ];
+    protected $hidden = [
+        'parsed_at'
+    ];
 
     public $timestamps = false;
+
+    public function getHumanParsedAtAttribute() {
+        return $this->parsed_at->format('d F Y H:i:s');
+    }
 
     public static function unsolvedErrors() {
         return self::where([

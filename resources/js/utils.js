@@ -34,4 +34,9 @@ Util.getToday = function() {
     return [yyyy, mm, dd].join('-')
 }
 
+export const MODAL_KIND = {
+    DELETE: 'delete',
+    EDIT: 'edit',
+    ADD: 'add',
+}
 export default Util;

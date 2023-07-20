@@ -5,6 +5,7 @@ import axios from 'axios';
 import MoneyFilter from '../components/MoneyFilter';
 import Util from '../utils';
 import MoneyTable from '../components/MoneyTable';
+import { Alert, Spinner } from 'react-bootstrap';
 
 const Dashboard = () => {
     const summary = {
@@ -14,25 +15,31 @@ const Dashboard = () => {
         failedParsed: 0
     }
     const [state, setState] = useState({
+        isLoadingList: true,
         summary,
         list: [],
-        isLoadingList: false
+        errMsg: null
     });
 
-    const getMoneyList = async (prop=null) => {
+    const setErrMsg = (msg=null) => {
+        Util.updateState(setState, {errMsg: msg});
+    }
 
+    const getMoneyList = async (prop=null) => {
         try {
             Util.updateState(setState, {
-                isLoadingList: true
+                isLoadingList: true,
+                errMsg: null
             })
             const url = '/api/money/list'
             // const {fromID, chatroomID, bulan} = prop
             const postData = prop ? prop : {}
             const response = await axios.post(url, postData)
-            setState({...response.data, isLoadingList: false})
+            Util.updateState(setState, {...response.data, isLoadingList: false, errMsg: null})
         } catch (e) {
             Util.updateState(setState, {
-                isLoadingList: false
+                isLoadingList: false,
+                errMsg: 'Gagal memuat data'
             })
             console.log(e);
         }
@@ -48,8 +55,14 @@ const Dashboard = () => {
                 Dashboard
             </h3>
             <MoneySummary summaryData={state.summary} />
-            <MoneyFilter isLoadingList={state.isLoadingList} onGetList={getMoneyList} />
-            <MoneyTable list={state.list} />
+            <MoneyFilter isLoadingList={state.isLoadingList}
+                setErrMsg={setErrMsg}
+                onGetList={getMoneyList} />
+            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
+            <MoneyTable
+                list={state.list}
+                getMoneyList={getMoneyList}
+                isLoadingList={state.isLoadingList} />
         </Layout>
     );
 }

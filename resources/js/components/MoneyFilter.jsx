@@ -5,7 +5,10 @@ import { Button } from 'react-bootstrap';
 
 const MoneyFilter = ({
     isLoadingList,
-    onGetList
+
+    // function
+    onGetList,
+    setErrMsg
 }) => {
     const [state, setState] = useState({
         froms: [],
@@ -14,7 +17,9 @@ const MoneyFilter = ({
         // selected item
         fromID: "",
         chatroomID: "",
-        bulan: ""
+        bulan: "",
+        isSendingReport: false,
+        reportSentNotif: false
     });
 
     const onChangeBulan = (e) => {
@@ -41,6 +46,30 @@ const MoneyFilter = ({
             chatroomID: state.chatroomID,
             bulan: state.bulan
         })
+    }
+
+    const onSendReport = async () => {
+        setErrMsg()
+        if([state.fromID, state.chatroomID].filter(x => !! x).length < 2 ) {
+            setErrMsg('Pengirim dan Grup tidak boleh kosong')
+            return false
+        } // endif
+
+        try {
+            Util.updateState(setState, {isSendingReport: true})
+            await axios.post('/api/bot/sendreport', {
+                bulan: state.bulan,
+                from: state.fromID,
+                chatroom: state.chatroomID
+            })
+            Util.updateState(setState, {isSendingReport: false, reportSentNotif: true})
+            setTimeout(() => {
+                Util.updateState(setState, {reportSentNotif: false})
+            }, 600)
+        } catch (e) {
+            Util.updateState(setState, {isSendingReport: false})
+            setErrMsg('Gagal mengirim Laporan')
+        }
     }
 
     useEffect(() => {
@@ -106,16 +135,23 @@ const MoneyFilter = ({
             </div>
             <div className="col-sm-12 col-xl-4 d-flex gap-2 justify-content-between">
                 <div>
-                    <Button variant="primary" onClick={onSubmitFilter}>
+                    <Button variant="primary" onClick={onSubmitFilter} disabled={isLoadingList}>
                         <i className="bi bi-funnel-fill"></i>
-                        <span>Filter</span>
+                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Filter' }</span>
                     </Button>
                 </div>
                 <div>
-                    <Button variant="secondary">
-                        <i className="bi bi-chat-right-dots-fill"></i>
-                        <span>{ isLoadingList ? 'Loading ...' : 'Kirim Laporan' }</span>
-                    </Button>
+                    {
+                        state.reportSentNotif ?
+                        <Button variant="success">
+                            <i className="bi bi-chat-right-dots-fill"></i>
+                            <span className='px-1'>Terkirim!</span>
+                        </Button> :
+                        <Button variant="secondary" onClick={onSendReport} disabled={state.isSendingReport}>
+                            <i className="bi bi-chat-right-dots-fill"></i>
+                            <span className='px-1'>{ state.isSendingReport ? 'Loading ...' : 'Kirim Laporan' }</span>
+                        </Button>
+                    }
                 </div>
             </div>
         </div>

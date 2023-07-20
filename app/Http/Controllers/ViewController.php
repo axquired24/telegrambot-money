@@ -110,6 +110,22 @@ class ViewController extends Controller
         ];
     }
 
+    public function getInvalidChat(Request $request)
+    {
+        return TelegramUpdate::unsolvedErrors()
+            ->get()
+            ->toJson();
+    }
+
+    public function updateInvalidChat(Request $request)
+    {
+        $chat = TelegramUpdate::find($request->update_id);
+        $chat->error_solved = 1;
+        $chat->save();
+
+        return $chat;
+    }
+
     public function invalidChat()
     {
         $chats = TelegramUpdate::unsolvedErrors()
