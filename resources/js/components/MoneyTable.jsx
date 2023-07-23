@@ -161,11 +161,14 @@ const ModalElm = ({
 const MoneyTable = ({
     list,
     isLoadingList,
-    getMoneyList
+    getMoneyList,
+    setErrMsg
 }) => {
     const [state, setState] = useState({
         modalKind: null,
         selectedItem: null,
+        isFetchingToday: false,
+        isFetchingTodayDone: false
     });
 
     const openModal = (trx, modalKind) => {
@@ -185,6 +188,29 @@ const MoneyTable = ({
         openModal(trx, MODAL_KIND.ADD)
     }
 
+    const errSync = () => {
+        Util.updateState(setState, {isFetchingToday: false })
+        setErrMsg('Error saat sinkronisasi, cek log untuk detail.')
+    }
+
+    const syncToday = async () => {
+        setErrMsg()
+        Util.updateState(setState, {isFetchingToday: true})
+        await axios.get('/api/bot/daily').then(() => {
+            axios.get('/api/db/parse').then(() => {
+                Util.updateState(setState, {isFetchingToday: false, isFetchingTodayDone: true})
+                getMoneyList()
+                setTimeout(() => {
+                    Util.updateState(setState, {isFetchingTodayDone: false})
+                }, 600)
+            }).catch(err => {
+                errSync()
+            });
+        }).catch(err => {
+            errSync()
+        })
+    }
+
     const loadingElm = <div className='mt-5 d-flex flex-column justify-content-center align-items-center'>
         <div>
             <Spinner />
@@ -196,14 +222,22 @@ const MoneyTable = ({
         isLoadingList ? loadingElm :
         <>
             {/* @TODO(albert): required fromID & chatroomID */}
-            {/* <div className="d-flex justify-content-end mt-4 gap-2">
-                <Button variant="success" onClick={() => newTrx(0)}>
+            <div className="d-flex justify-content-start mt-4 gap-2">
+                {/* <Button variant="success" onClick={() => newTrx(0)}>
                     + Pemasukan
                 </Button>
                 <Button variant="danger" onClick={() => newTrx(1)}>
                     + Pengeluaran
+                </Button> */}
+                <Button variant={state.isFetchingTodayDone ? "success" : "primary"}
+                    disabled={state.isFetchingToday}
+                    onClick={syncToday}>
+                    <Spinner size="sm" animation="grow" />
+                    <span className="mx-1">
+                        { state.isFetchingTodayDone ? 'Sukses!' : 'Fetch Hari Ini' }
+                    </span>
                 </Button>
-            </div> */}
+            </div>
             <div className="table-responsive mt-4">
                 <Table striped bordered hover style={{minWidth: '800px', width: '100%'}}>
                     <caption>History Keuangan</caption>
@@ -225,7 +259,12 @@ const MoneyTable = ({
                                     <td className={Util.getTextColor(trx)}>{trx.amount_format}</td>
                                     <td>{trx.description}</td>
                                     <td className={Util.getTextColor(trx)}>{Util.getTextKind(trx)}</td>
-                                    <td>{trx.from.username}</td>
+                                    <td>
+                                        <div>
+                                            {trx.from.username} <br />
+                                            <code>👥 {trx.topic.name}</code>
+                                        </div>
+                                    </td>
                                     <td style={{ width: '100px' }}>
                                         <Button size="sm" variant="primary"
                                             onClick={() => openModal(trx, MODAL_KIND.EDIT)}

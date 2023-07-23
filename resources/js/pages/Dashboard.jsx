@@ -62,6 +62,7 @@ const Dashboard = () => {
             <MoneyTable
                 list={state.list}
                 getMoneyList={getMoneyList}
+                setErrMsg={setErrMsg}
                 isLoadingList={state.isLoadingList} />
         </Layout>
     );

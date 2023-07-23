@@ -7,6 +7,7 @@ use App\Models\MoneyTrack;
 use App\Models\From;
 use App\Models\Chatroom;
 use App\Models\TelegramUpdate;
+use App\Models\Topic;
 use Illuminate\Support\Carbon;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -70,9 +71,10 @@ class ViewController extends Controller
     {
         $chatrooms = Chatroom::all();
         $froms = From::all();
+        $topics = Topic::all();
         $bulan = date('Y-m');
 
-        return compact('chatrooms', 'froms', 'bulan');
+        return compact('chatrooms', 'topics', 'froms', 'bulan');
     }
 
     public function getMoneyData(Request $request)
@@ -83,8 +85,8 @@ class ViewController extends Controller
         if (! empty($request->fromID)) {
             $list = $list->where('from_id', $request->fromID);
         } // endif
-        if (! empty($request->chatroomID)) {
-            $list = $list->where('chatroom_id', $request->chatroomID);
+        if (! empty($request->topicID)) {
+            $list = $list->where('topic_id', $request->topicID);
         } // endif
         $list = $list->get();
 
@@ -94,13 +96,14 @@ class ViewController extends Controller
         $expense = $this->rupiahFormat($summary['expense'], true);
 
         $failedParsed = TelegramUpdate::unsolvedErrors()->count();
-        // $chatrooms = Chatroom::all();
+        $topics = Topic::all();
         $froms = From::all();
 
-        $list = $list->each(function($item) use ($froms) {
+        $list = $list->each(function($item) use ($froms, $topics) {
             $item->amount_format = $this->rupiahFormat($item->amount, true);
             $item->trx_date_format = Carbon::parse($item->trx_date)->format('d F Y');
             $item->from = $froms->find($item->from_id);
+            $item->topic = $topics->find($item->topic_id);
             return $item;
         });
 

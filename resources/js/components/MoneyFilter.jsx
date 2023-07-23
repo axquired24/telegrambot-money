@@ -13,10 +13,11 @@ const MoneyFilter = ({
     const [state, setState] = useState({
         froms: [],
         chatrooms: [],
+        topics: [],
 
         // selected item
         fromID: "",
-        chatroomID: "",
+        topicID: "",
         bulan: "",
         isSendingReport: false,
         reportSentNotif: false
@@ -36,22 +37,22 @@ const MoneyFilter = ({
 
     const onChangeChatroom = (e) => {
         Util.updateState(setState, {
-            chatroomID: e.target.value
+            topicID: e.target.value
         })
     }
 
     const onSubmitFilter = () => {
         onGetList({
             fromID: state.fromID,
-            chatroomID: state.chatroomID,
+            topicID: state.topicID,
             bulan: state.bulan
         })
     }
 
     const onSendReport = async () => {
         setErrMsg()
-        if([state.fromID, state.chatroomID].filter(x => !! x).length < 2 ) {
-            setErrMsg('Pengirim dan Grup tidak boleh kosong')
+        if([state.fromID, state.topicID].filter(x => !! x).length < 2 ) {
+            setErrMsg('Pengirim dan Subgroup tidak boleh kosong')
             return false
         } // endif
 
@@ -60,7 +61,7 @@ const MoneyFilter = ({
             await axios.post('/api/bot/sendreport', {
                 bulan: state.bulan,
                 from: state.fromID,
-                chatroom: state.chatroomID
+                topic: state.topicID
             })
             Util.updateState(setState, {isSendingReport: false, reportSentNotif: true})
             setTimeout(() => {
@@ -78,6 +79,7 @@ const MoneyFilter = ({
                 const response = await axios.get('/api/masterdata')
                 Util.updateState(setState, {
                     froms: response.data.froms,
+                    topics: response.data.topics,
                     chatrooms: response.data.chatrooms,
                     bulan: response.data.bulan
                 })
@@ -118,14 +120,14 @@ const MoneyFilter = ({
                         </select>
                     </div>
                     <div className="col-4">
-                        <label>Grup</label>
+                        <label>Subgroup</label>
                         <select className="form-control" name="chatroom" placeholder="Chatroom"
                             onChange={onChangeChatroom}>
-                            <option value="">Semua Chatroom</option>
+                            <option value="">Semua Subgroup</option>
                             {
-                                state.chatrooms.map((cr) => {
+                                state.topics.map((cr) => {
                                     return (
-                                        <option key={cr.id} value={cr.id}>{cr.title}</option>
+                                        <option key={cr.id} value={cr.id}>{cr.name}</option>
                                     )
                                 })
                             }

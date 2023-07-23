@@ -55,6 +55,7 @@ return [
     |
     */
     'default' => 'mybot',
+    'supergroup_id' => env('TELEGRAM_SUPERGROUP_ID'),
 
     /*
     |--------------------------------------------------------------------------

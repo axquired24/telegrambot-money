@@ -20,6 +20,7 @@ const InvalidMsg = () => {
     const [state, setState] = useState({
         isLoadingList: true,
         isSolvingChat: false,
+        isParsingChat: false,
 
         showModal: false,
         selectedChat: null,
@@ -75,11 +76,38 @@ const InvalidMsg = () => {
                 error_solved: 1
             })
             Util.updateState(setState, { isSolvingChat: false, errMsg: null })
+            getInvalidList().catch(e => {})
             handleModalClose()
         } catch (e) {
             Util.updateState(setState, {
                 isSolvingChat: false,
                 errMsg: 'Gagal tandai selesai untuk #' + state.selectedChat.update_id
+            })
+        }
+    }
+
+    const parseChat = async () => {
+        try {
+            Util.updateState(setState, {
+                isParsingChat: true,
+                errMsg: null
+            })
+            const resp = await axios.post('/api/chat/parse', {
+                update_id: state.selectedChat.update_id
+            })
+
+            if(resp.data?.has_error) {
+                throw new Error('Failed to parse chat')
+            } else {
+                Util.updateState(setState, { isParsingChat: false, errMsg: null })
+                getInvalidList().catch(e => {})
+                handleModalClose()
+            } // endif
+            // handleModalClose()
+        } catch (e) {
+            Util.updateState(setState, {
+                isParsingChat: false,
+                errMsg: 'Gagal parse chat #' + state.selectedChat.update_id
             })
         }
     }
@@ -136,6 +164,9 @@ const InvalidMsg = () => {
                 <Modal.Footer>
                     <Button variant="primary" onClick={markAsSolved} disabled={state.isSolvingChat}>
                         { state.isSolvingChat ? 'Loading ...' : 'Tandai Selesai' }
+                    </Button>
+                    <Button variant="warning" onClick={parseChat}>
+                        Parse Ulang
                     </Button>
                     <Button variant="secondary" onClick={copyJson}>
                         Copy Json

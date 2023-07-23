@@ -18,7 +18,7 @@ class MoneyTrack extends Model
     protected $fillable = [
         'id', 'amount', 'is_expense',
         'trx_date', 'description',
-        'from_id', 'chatroom_id',
+        'from_id', 'topic_id',
         'created_at', 'updated_at', 'deleted_at',
     ];
 

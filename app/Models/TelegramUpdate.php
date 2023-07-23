@@ -27,6 +27,9 @@ class TelegramUpdate extends Model
     public $timestamps = false;
 
     public function getHumanParsedAtAttribute() {
+        if(empty($this->parsed_at)) {
+            return null;
+        } // endif
         return $this->parsed_at->format('d F Y H:i:s');
     }
 

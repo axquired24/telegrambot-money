@@ -10,7 +10,7 @@ class CreateMoneyTracksTable extends Migration
     {
         Schema::create('money_tracks', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('amount')->nullable();
+            $table->float('amount', 11, 2)->nullable();
             $table->tinyInteger('is_expense')->default(1);
             $table->datetime('deleted_at')->nullable();
             $table->datetime('created_at');
@@ -18,9 +18,10 @@ class CreateMoneyTracksTable extends Migration
             $table->date('trx_date')->nullable();
             $table->string('description')->nullable();
             $table->integer('from_id');
-            $table->integer('chatroom_id');
-            $table->foreign('chatroom_id')->references('id')->on('chatrooms');
+            $table->integer('topic_id')->unsigned();
+
             $table->foreign('from_id')->references('id')->on('froms');
+            $table->foreign('topic_id')->references('id')->on('topics');
         });
     }
 

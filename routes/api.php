@@ -36,3 +36,4 @@ Route::post('invalid/solve', [ViewController::class, 'updateInvalidChat']);
 Route::post('trx/edit', [DuitController::class, 'editMoneyTrack']);
 Route::post('trx/add', [DuitController::class, 'addMoneyTrack']);
 Route::post('trx/delete', [DuitController::class, 'deleteMoneyTrack']);
+Route::post('chat/parse', [DuitController::class, 'parseSingleMsg']);
