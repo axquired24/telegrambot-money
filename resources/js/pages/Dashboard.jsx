@@ -55,10 +55,10 @@ const Dashboard = () => {
                 Dashboard
             </h3>
             <MoneySummary summaryData={state.summary} />
+            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
             <MoneyFilter isLoadingList={state.isLoadingList}
                 setErrMsg={setErrMsg}
                 onGetList={getMoneyList} />
-            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
             <MoneyTable
                 list={state.list}
                 getMoneyList={getMoneyList}

@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import axios from 'axios';
 import Util from '../utils';
-import { Button } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
 
 const MoneyFilter = ({
     isLoadingList,
@@ -92,71 +92,71 @@ const MoneyFilter = ({
     }, []);
 
     return (
-        <div className="mt-4 row g-2 align-items-end">
-            <div className="col-sm-12 col-xl-8">
-                <div className="row gap-0">
-                    <div className="col-4">
-                        <label>Bulan</label>
-                        <input type="month" className="form-control"
-                            name="bulan"
-                            onChange={onChangeBulan}
-                            value={state.bulan}
-                            lang="id-ID"
-                            placeholder="Pilih Bulan" role="button" />
-                    </div>
-                    <div className="col-4">
-                        <label>Pengirim</label>
-                        <select className="form-control" name="from" placeholder="Pengirim"
-                            onChange={onChangeFrom}
-                            >
-                            <option value="">Semua Pengirim</option>
-                            {
-                                state.froms.map((from) => {
-                                    return (
-                                        <option key={from.id} value={from.id}>{from.username}</option>
-                                    )
-                                })
-                            }
-                        </select>
-                    </div>
-                    <div className="col-4">
-                        <label>Subgroup</label>
-                        <select className="form-control" name="chatroom" placeholder="Chatroom"
-                            onChange={onChangeChatroom}>
-                            <option value="">Semua Subgroup</option>
-                            {
-                                state.topics.map((cr) => {
-                                    return (
-                                        <option key={cr.id} value={cr.id}>{cr.name}</option>
-                                    )
-                                })
-                            }
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div className="col-sm-12 col-xl-4 d-flex gap-2 justify-content-between">
-                <div>
-                    <Button variant="primary" onClick={onSubmitFilter} disabled={isLoadingList}>
-                        <i className="bi bi-funnel-fill"></i>
-                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Filter' }</span>
-                    </Button>
-                </div>
-                <div>
+        <>
+            <Row className="mt-4 g-2 mx-auto">
+                <Col xs={12} xl={4}>
+                    <label>Bulan</label>
+                    <input type="month" className="form-control"
+                        name="bulan"
+                        onChange={onChangeBulan}
+                        value={state.bulan}
+                        lang="id-ID"
+                        placeholder="Pilih Bulan" role="button" />
+                </Col>
+                <Col xs={12} xl={4}>
+                    <label>Pengirim</label>
+                    <select className="form-control" name="from" placeholder="Pengirim"
+                        onChange={onChangeFrom}
+                        >
+                        <option value="">Semua Pengirim</option>
+                        {
+                            state.froms.map((from) => {
+                                return (
+                                    <option key={from.id} value={from.id}>{from.username}</option>
+                                )
+                            })
+                        }
+                    </select>
+                </Col>
+                <Col xs={12} xl={4}>
+                    <label>Subgroup</label>
+                    <select className="form-control" name="chatroom" placeholder="Chatroom"
+                        onChange={onChangeChatroom}>
+                        <option value="">Semua Subgroup</option>
+                        {
+                            state.topics.map((cr) => {
+                                return (
+                                    <option key={cr.id} value={cr.id}>{cr.name}</option>
+                                )
+                            })
+                        }
+                    </select>
+                </Col>
+            </Row>
+            <div className="row gap-1 mt-2 justify-content-end">
+                <div className="col-xs-6 col-lg-3 d-grid">
                     {
                         state.reportSentNotif ?
-                        <Button variant="success">
+                        <Button variant="success" size="lg">
                             <i className="bi bi-chat-right-dots-fill"></i>
                             <span className='px-1'>Terkirim!</span>
                         </Button> :
-                        <Button variant="secondary" onClick={onSendReport} disabled={state.isSendingReport}>
+                        <Button variant="secondary"
+                            onClick={onSendReport} disabled={state.isSendingReport}>
                             <i className="bi bi-chat-right-dots-fill"></i>
                             <span className='px-1'>{ state.isSendingReport ? 'Loading ...' : 'Kirim Laporan' }</span>
                         </Button>
                     }
                 </div>
+                <div className="col-xs-6 col-lg-3 d-grid">
+                    <Button variant="primary"
+                        onClick={onSubmitFilter} disabled={isLoadingList}>
+                        <i className="bi bi-funnel-fill"></i>
+                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Filter' }</span>
+                    </Button>
+                </div>
             </div>
-        </div>
+        </>
     );
 }
 
