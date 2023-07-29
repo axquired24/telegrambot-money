@@ -91,7 +91,7 @@ const MoneyFilter = ({
 
     return (
         <>
-            <Row className="mt-4 g-2 mx-auto">
+            <Row className="g-2 mx-auto">
                 <Col xs={12} xl={4}>
                     <label>Bulan</label>
                     <input type="month" className="form-control"
@@ -131,7 +131,7 @@ const MoneyFilter = ({
                     </select>
                 </Col>
             </Row>
-            <div className="row gap-1 mt-2 justify-content-end">
+            <div className="row g-2 gap-1 mt-2 justify-content-end">
                 <div className="col-xs-6 col-lg-3 d-grid">
                     {
                         state.reportSentNotif ?

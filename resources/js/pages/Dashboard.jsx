@@ -5,7 +5,7 @@ import axios from 'axios';
 import MoneyFilter from '../components/MoneyFilter';
 import Util from '../utils';
 import MoneyTable from '../components/MoneyTable';
-import { Alert } from 'react-bootstrap';
+import { Accordion, Alert } from 'react-bootstrap';
 import uniqBy from 'lodash.uniqby';
 
 const Dashboard = () => {
@@ -93,13 +93,28 @@ const Dashboard = () => {
             <h3>
                 Dashboard
             </h3>
-            <MoneySummary summaryData={state.summary} />
+            <Accordion defaultActiveKey={["0"]} alwaysOpen className="mt-4">
+                <Accordion.Item eventKey="0">
+                    <Accordion.Header>Ringkasan Bulan Ini</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneySummary summaryData={state.summary} />
+                    </Accordion.Body>
+                </Accordion.Item>
+
+                <Accordion.Item eventKey="1">
+                    <Accordion.Header>Filter</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneyFilter isLoadingList={state.isLoadingList}
+                            froms={state.froms}
+                            topics={state.topics}
+                            setErrMsg={setErrMsg}
+                            onGetList={getMoneyList} />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+
             <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
-            <MoneyFilter isLoadingList={state.isLoadingList}
-                froms={state.froms}
-                topics={state.topics}
-                setErrMsg={setErrMsg}
-                onGetList={getMoneyList} />
+
             <MoneyTable
                 categories={state.categories}
                 list={state.list}
