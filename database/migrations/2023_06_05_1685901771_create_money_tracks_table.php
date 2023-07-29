@@ -19,9 +19,11 @@ class CreateMoneyTracksTable extends Migration
             $table->string('description')->nullable();
             $table->integer('from_id');
             $table->integer('topic_id')->unsigned();
+            $table->bigInteger('money_category_id')->unsigned()->nullable();
 
             $table->foreign('from_id')->references('id')->on('froms');
             $table->foreign('topic_id')->references('id')->on('topics');
+            $table->foreign('money_category_id')->references('id')->on('money_categories');
         });
     }
 

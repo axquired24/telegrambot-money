@@ -12,6 +12,7 @@ use Exception;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 class DuitController extends Controller
 {
@@ -298,6 +299,21 @@ class DuitController extends Controller
         $track->save();
         return redirect()->back();
 
+    }
+
+    public function updateMoneyTrackCategory(Request $request)
+    {
+        $trx = MoneyTrack::find($request->id);
+        $newCategoryId = $request->money_category_id;
+
+        if($newCategoryId === 0) {
+            $trx->money_category_id = null;
+        } else {
+            $trx->money_category_id = $newCategoryId;
+        } // endif
+
+        $trx->save();
+        return $trx;
     }
 
     public function editMoneyTrack(Request $request)

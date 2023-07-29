@@ -5,7 +5,8 @@ import axios from 'axios';
 import MoneyFilter from '../components/MoneyFilter';
 import Util from '../utils';
 import MoneyTable from '../components/MoneyTable';
-import { Alert, Spinner } from 'react-bootstrap';
+import { Alert } from 'react-bootstrap';
+import uniqBy from 'lodash.uniqby';
 
 const Dashboard = () => {
     const summary = {
@@ -17,6 +18,9 @@ const Dashboard = () => {
     const [state, setState] = useState({
         isLoadingList: true,
         summary,
+        froms: [],
+        topics: [],
+        categories: [],
         list: [],
         errMsg: null
     });
@@ -35,7 +39,20 @@ const Dashboard = () => {
             // const {fromID, chatroomID, bulan} = prop
             const postData = prop ? prop : {}
             const response = await axios.post(url, postData)
-            Util.updateState(setState, {...response.data, isLoadingList: false, errMsg: null})
+            const list = response?.data?.list ?? []
+
+            let froms = list.map(x => x.from)
+            froms = uniqBy(froms, 'id')
+            let topics = list.map(x => x.topic)
+            topics = uniqBy(topics, 'id')
+
+            Util.updateState(setState, {
+                ...response.data,
+                froms,
+                topics,
+                isLoadingList: false,
+                errMsg: null
+            })
         } catch (e) {
             Util.updateState(setState, {
                 isLoadingList: false,
@@ -45,7 +62,29 @@ const Dashboard = () => {
         }
     }
 
+    const getMasterData = async () => {
+        try {
+            Util.updateState(setState, {
+                errMsg: null
+            })
+            const url = '/api/masterdata'
+            const response = await axios.get(url)
+            const categories = response?.data?.categories
+
+            Util.updateState(setState, {
+                categories,
+                errMsg: null
+            })
+        } catch (e) {
+            Util.updateState(setState, {
+                errMsg: 'Gagal memuat masterdata'
+            })
+            console.log(e);
+        }
+    }
+
     useEffect(() => {
+        getMasterData().catch(e => {})
         getMoneyList().catch(e => {})
     }, []);
 
@@ -57,9 +96,12 @@ const Dashboard = () => {
             <MoneySummary summaryData={state.summary} />
             <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
             <MoneyFilter isLoadingList={state.isLoadingList}
+                froms={state.froms}
+                topics={state.topics}
                 setErrMsg={setErrMsg}
                 onGetList={getMoneyList} />
             <MoneyTable
+                categories={state.categories}
                 list={state.list}
                 getMoneyList={getMoneyList}
                 setErrMsg={setErrMsg}

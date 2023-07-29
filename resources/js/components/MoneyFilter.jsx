@@ -5,20 +5,18 @@ import { Button, Col, Row } from 'react-bootstrap';
 
 const MoneyFilter = ({
     isLoadingList,
+    froms,
+    topics,
 
     // function
     onGetList,
     setErrMsg
 }) => {
     const [state, setState] = useState({
-        froms: [],
-        chatrooms: [],
-        topics: [],
-
         // selected item
         fromID: "",
         topicID: "",
-        bulan: "",
+        bulan: Util.getToday({monthYear: true}),
         isSendingReport: false,
         reportSentNotif: false
     });
@@ -73,23 +71,23 @@ const MoneyFilter = ({
         }
     }
 
-    useEffect(() => {
-        const getMasterData = async () => {
-            try {
-                const response = await axios.get('/api/masterdata')
-                Util.updateState(setState, {
-                    froms: response.data.froms,
-                    topics: response.data.topics,
-                    chatrooms: response.data.chatrooms,
-                    bulan: response.data.bulan
-                })
-            } catch {
-                console.log(e)
-            } // endtry catch
-        }
+    // useEffect(() => {
+    //     const getMasterData = async () => {
+    //         try {
+    //             const response = await axios.get('/api/masterdata')
+    //             Util.updateState(setState, {
+    //                 froms: response.data.froms,
+    //                 topics: response.data.topics,
+    //                 chatrooms: response.data.chatrooms,
+    //                 bulan: response.data.bulan
+    //             })
+    //         } catch {
+    //             console.log(e)
+    //         } // endtry catch
+    //     }
 
-        getMasterData().catch(e => {})
-    }, []);
+    //     getMasterData().catch(e => {})
+    // }, []);
 
     return (
         <>
@@ -110,7 +108,7 @@ const MoneyFilter = ({
                         >
                         <option value="">Semua Pengirim</option>
                         {
-                            state.froms.map((from) => {
+                            froms.map((from) => {
                                 return (
                                     <option key={from.id} value={from.id}>{from.username}</option>
                                 )
@@ -124,7 +122,7 @@ const MoneyFilter = ({
                         onChange={onChangeChatroom}>
                         <option value="">Semua Subgroup</option>
                         {
-                            state.topics.map((cr) => {
+                            topics.map((cr) => {
                                 return (
                                     <option key={cr.id} value={cr.id}>{cr.name}</option>
                                 )

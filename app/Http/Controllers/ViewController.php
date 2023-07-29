@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\MoneyTrack;
 use App\Models\From;
 use App\Models\Chatroom;
+use App\Models\MoneyCategory;
 use App\Models\TelegramUpdate;
 use App\Models\Topic;
 use Illuminate\Support\Carbon;
@@ -69,12 +70,14 @@ class ViewController extends Controller
 
     public function getMasterData(Request $request)
     {
-        $chatrooms = Chatroom::all();
-        $froms = From::all();
-        $topics = Topic::all();
-        $bulan = date('Y-m');
+        // $chatrooms = Chatroom::all();
+        // $froms = From::all();
+        // $topics = Topic::all();
+        // $bulan = date('Y-m');
+        // return compact('chatrooms', 'categories', 'froms', 'bulan');
 
-        return compact('chatrooms', 'topics', 'froms', 'bulan');
+        $categories = MoneyCategory::all();
+        return compact('categories');
     }
 
     public function getMoneyData(Request $request)
@@ -98,12 +101,14 @@ class ViewController extends Controller
         $failedParsed = TelegramUpdate::unsolvedErrors()->count();
         $topics = Topic::all();
         $froms = From::all();
+        $categories = MoneyCategory::all();
 
-        $list = $list->each(function($item) use ($froms, $topics) {
+        $list = $list->each(function($item) use ($froms, $topics, $categories) {
             $item->amount_format = $this->rupiahFormat($item->amount, true);
             $item->trx_date_format = Carbon::parse($item->trx_date)->format('d F Y');
             $item->from = $froms->find($item->from_id);
             $item->topic = $topics->find($item->topic_id);
+            $item->category = $categories->find($item->money_category_id);
             return $item;
         });
 
