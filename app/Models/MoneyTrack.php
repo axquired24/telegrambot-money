@@ -24,6 +24,13 @@ class MoneyTrack extends Model
         'created_at', 'updated_at', 'deleted_at',
     ];
 
+    protected $casts = [
+        'from_id' => 'integer',
+        'topic_id' => 'integer',
+        'is_expense' => 'integer',
+        'money_category_id' => 'integer'
+    ];
+
     public $timestamps = true;
 
     public function MoneyCategory(): BelongsTo

@@ -17,6 +17,11 @@ class Topic extends Model
         'id', 'chatroom_id', 'topic_id', 'name'
     ];
 
+    protected $casts = [
+        'chatroom_id' => 'integer',
+        'topic_id' => 'integer'
+    ];
+
     public $timestamps = false;
 
     public function chatroom(): BelongsTo
