@@ -7,6 +7,7 @@ import Util from '../utils';
 import MoneyTable from '../components/MoneyTable';
 import { Accordion, Alert } from 'react-bootstrap';
 import uniqBy from 'lodash.uniqby';
+import MoneyChart from '../components/MoneyChart';
 
 const Dashboard = () => {
     const summary = {
@@ -93,15 +94,9 @@ const Dashboard = () => {
             <h3>
                 Dashboard
             </h3>
-            <Accordion defaultActiveKey={["0"]} alwaysOpen className="mt-4">
-                <Accordion.Item eventKey="0">
-                    <Accordion.Header>Ringkasan Bulan Ini</Accordion.Header>
-                    <Accordion.Body>
-                        <MoneySummary summaryData={state.summary} />
-                    </Accordion.Body>
-                </Accordion.Item>
-
-                <Accordion.Item eventKey="1">
+            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
+            <Accordion defaultActiveKey={["summary", "filters"]} alwaysOpen className="mt-4">
+                <Accordion.Item eventKey="filters">
                     <Accordion.Header>Filter</Accordion.Header>
                     <Accordion.Body>
                         <MoneyFilter isLoadingList={state.isLoadingList}
@@ -111,9 +106,21 @@ const Dashboard = () => {
                             onGetList={getMoneyList} />
                     </Accordion.Body>
                 </Accordion.Item>
-            </Accordion>
 
-            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
+                <Accordion.Item eventKey="summary">
+                    <Accordion.Header>Ringkasan Bulan Ini</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneySummary summaryData={state.summary} />
+                    </Accordion.Body>
+                </Accordion.Item>
+
+                <Accordion.Item eventKey="chart">
+                    <Accordion.Header>Grafik per Kategori</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneyChart list={state.list} categories={state.categories} />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
 
             <MoneyTable
                 categories={state.categories}

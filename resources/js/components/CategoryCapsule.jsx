@@ -32,10 +32,10 @@ const CategoryCapsule = (props) => {
 
     const onChange = async (e) => {
         const value = e.target.value
-        if(! confirm('Ubah kategori?')) {
-            Util.updateState(setState, {showButton: 1})
-            return false
-        } // endif
+        // if(! confirm('Ubah kategori?')) {
+        //     Util.updateState(setState, {showButton: 1})
+        //     return false
+        // } // endif
 
         let newId = parseInt(value)
         let selectedCat = EMPTY_CATEGORY

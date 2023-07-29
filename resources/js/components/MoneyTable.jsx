@@ -69,13 +69,13 @@ const MoneyTable = ({
         isLoadingList ? loadingElm :
         <>
             {/* @TODO(albert): required fromID & chatroomID */}
-            <div className="d-flex justify-content-start mt-4 gap-2">
-                {/* <Button variant="success" onClick={() => newTrx(0)}>
+            {/* <div className="d-flex justify-content-start mt-4 gap-2">
+                <Button variant="success" onClick={() => newTrx(0)}>
                     + Pemasukan
                 </Button>
                 <Button variant="danger" onClick={() => newTrx(1)}>
                     + Pengeluaran
-                </Button> */}
+                </Button>
                 <Button variant={state.isFetchingTodayDone ? "success" : "primary"}
                     disabled={state.isFetchingToday}
                     onClick={syncToday}>
@@ -84,7 +84,7 @@ const MoneyTable = ({
                         { state.isFetchingTodayDone ? 'Sukses!' : 'Fetch Hari Ini' }
                     </span>
                 </Button>
-            </div>
+            </div> */}
             <div className="table-responsive mt-4">
                 <Table striped bordered hover style={{minWidth: '800px', width: '100%'}}>
                     <caption>History Keuangan</caption>

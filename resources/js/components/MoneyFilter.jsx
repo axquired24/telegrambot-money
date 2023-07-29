@@ -3,6 +3,7 @@ import axios from 'axios';
 import Util from '../utils';
 import { Button, Col, Row } from 'react-bootstrap';
 
+const ALL_STR = "ALL"
 const MoneyFilter = ({
     isLoadingList,
     froms,
@@ -14,8 +15,8 @@ const MoneyFilter = ({
 }) => {
     const [state, setState] = useState({
         // selected item
-        fromID: "",
-        topicID: "",
+        fromID: ALL_STR,
+        topicID: ALL_STR,
         bulan: Util.getToday({monthYear: true}),
         isSendingReport: false,
         reportSentNotif: false
@@ -41,15 +42,27 @@ const MoneyFilter = ({
 
     const onSubmitFilter = () => {
         onGetList({
-            fromID: state.fromID,
-            topicID: state.topicID,
+            fromID: state.fromID === ALL_STR ? "" : state.fromID,
+            topicID: state.topicID === ALL_STR ? "" : state.topicID,
+            bulan: state.bulan
+        })
+    }
+
+    const onResetFilter = () => {
+        Util.updateState(setState, {
+            fromID: ALL_STR,
+            topicID: ALL_STR
+        })
+        onGetList({
+            fromID: "",
+            topicID: "",
             bulan: state.bulan
         })
     }
 
     const onSendReport = async () => {
         setErrMsg()
-        if([state.fromID, state.topicID].filter(x => !! x).length < 2 ) {
+        if([state.fromID, state.topicID].filter(x => !! x && (x !== ALL_STR)).length < 2 ) {
             setErrMsg('Pengirim dan Subgroup tidak boleh kosong')
             return false
         } // endif
@@ -106,7 +119,7 @@ const MoneyFilter = ({
                     <select className="form-control" name="from" placeholder="Pengirim"
                         onChange={onChangeFrom}
                         >
-                        <option value="">Semua Pengirim</option>
+                        <option value={ALL_STR}>Semua Pengirim</option>
                         {
                             froms.map((from) => {
                                 return (
@@ -120,7 +133,7 @@ const MoneyFilter = ({
                     <label>Subgroup</label>
                     <select className="form-control" name="chatroom" placeholder="Chatroom"
                         onChange={onChangeChatroom}>
-                        <option value="">Semua Subgroup</option>
+                        <option value={ALL_STR}>Semua Subgroup</option>
                         {
                             topics.map((cr) => {
                                 return (
@@ -132,7 +145,7 @@ const MoneyFilter = ({
                 </Col>
             </Row>
             <div className="row g-2 gap-1 mt-2 justify-content-end">
-                <div className="col-xs-6 col-lg-3 d-grid">
+                <div className="col-xs-6 col-xl-2 d-grid">
                     {
                         state.reportSentNotif ?
                         <Button variant="success" size="lg">
@@ -146,7 +159,14 @@ const MoneyFilter = ({
                         </Button>
                     }
                 </div>
-                <div className="col-xs-6 col-lg-3 d-grid">
+                <div className="col-xs-3 col-xl-1 d-grid">
+                    <Button variant="secondary"
+                        onClick={onResetFilter} disabled={isLoadingList}>
+                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Reset' }</span>
+                    </Button>
+                </div>
+
+                <div className="col-xs-3 col-xl-1 d-grid">
                     <Button variant="primary"
                         onClick={onSubmitFilter} disabled={isLoadingList}>
                         <i className="bi bi-funnel-fill"></i>
