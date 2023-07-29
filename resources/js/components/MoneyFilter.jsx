@@ -160,17 +160,17 @@ const MoneyFilter = ({
                     }
                 </div>
                 <div className="col-xs-3 col-xl-1 d-grid">
-                    <Button variant="secondary"
+                    <Button variant="danger"
                         onClick={onResetFilter} disabled={isLoadingList}>
                         <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Reset' }</span>
                     </Button>
                 </div>
 
                 <div className="col-xs-3 col-xl-1 d-grid">
-                    <Button variant="primary"
+                    <Button variant="success"
                         onClick={onSubmitFilter} disabled={isLoadingList}>
-                        <i className="bi bi-funnel-fill"></i>
-                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Filter' }</span>
+                        <i class="bi bi-check-lg"></i>
+                        <span className='px-1'>{ isLoadingList ? 'Loading ' : 'Oke' }</span>
                     </Button>
                 </div>
             </div>
