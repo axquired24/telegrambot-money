@@ -28,6 +28,7 @@ class MoneyTrack extends Model
         'from_id' => 'integer',
         'topic_id' => 'integer',
         'is_expense' => 'integer',
+        'amount' => 'integer',
         'money_category_id' => 'integer'
     ];
 
