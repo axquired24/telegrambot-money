@@ -30,3 +30,11 @@ Route::post('webhook/callback', [DuitController::class, 'webhookCallback']);
 
 Route::get('masterdata', [ViewController::class, 'getMasterData']);
 Route::post('money/list', [ViewController::class, 'getMoneyData']);
+Route::get('invalid/list', [ViewController::class, 'getInvalidChat']);
+Route::post('invalid/solve', [ViewController::class, 'updateInvalidChat']);
+
+Route::post('trx/category/edit', [DuitController::class, 'updateMoneyTrackCategory']);
+Route::post('trx/edit', [DuitController::class, 'editMoneyTrack']);
+Route::post('trx/add', [DuitController::class, 'addMoneyTrack']);
+Route::post('trx/delete', [DuitController::class, 'deleteMoneyTrack']);
+Route::post('chat/parse', [DuitController::class, 'parseSingleMsg']);

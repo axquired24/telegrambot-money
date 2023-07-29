@@ -5,6 +5,9 @@ import axios from 'axios';
 import MoneyFilter from '../components/MoneyFilter';
 import Util from '../utils';
 import MoneyTable from '../components/MoneyTable';
+import { Accordion, Alert } from 'react-bootstrap';
+import uniqBy from 'lodash.uniqby';
+import MoneyChart from '../components/MoneyChart';
 
 const Dashboard = () => {
     const summary = {
@@ -14,31 +17,75 @@ const Dashboard = () => {
         failedParsed: 0
     }
     const [state, setState] = useState({
+        isLoadingList: true,
         summary,
+        froms: [],
+        topics: [],
+        categories: [],
         list: [],
-        isLoadingList: false
+        errMsg: null
     });
 
-    const getMoneyList = async (prop=null) => {
+    const setErrMsg = (msg=null) => {
+        Util.updateState(setState, {errMsg: msg});
+    }
 
+    const getMoneyList = async (prop=null) => {
         try {
             Util.updateState(setState, {
-                isLoadingList: true
+                isLoadingList: true,
+                errMsg: null
             })
             const url = '/api/money/list'
             // const {fromID, chatroomID, bulan} = prop
             const postData = prop ? prop : {}
             const response = await axios.post(url, postData)
-            setState({...response.data, isLoadingList: false})
+            const list = response?.data?.list ?? []
+
+            let froms = list.map(x => x.from)
+            froms = uniqBy(froms, 'id')
+            let topics = list.map(x => x.topic)
+            topics = uniqBy(topics, 'id')
+
+            Util.updateState(setState, {
+                ...response.data,
+                froms,
+                topics,
+                isLoadingList: false,
+                errMsg: null
+            })
         } catch (e) {
             Util.updateState(setState, {
-                isLoadingList: false
+                isLoadingList: false,
+                errMsg: 'Gagal memuat data'
+            })
+            console.log(e);
+        }
+    }
+
+    const getMasterData = async () => {
+        try {
+            Util.updateState(setState, {
+                errMsg: null
+            })
+            const url = '/api/masterdata'
+            const response = await axios.get(url)
+            const categories = response?.data?.categories
+
+            Util.updateState(setState, {
+                categories,
+                errMsg: null
+            })
+        } catch (e) {
+            Util.updateState(setState, {
+                errMsg: 'Gagal memuat masterdata'
             })
             console.log(e);
         }
     }
 
     useEffect(() => {
+        getMasterData().catch(e => {})
         getMoneyList().catch(e => {})
     }, []);
 
@@ -47,9 +94,40 @@ const Dashboard = () => {
             <h3>
                 Dashboard
             </h3>
-            <MoneySummary summaryData={state.summary} />
-            <MoneyFilter isLoadingList={state.isLoadingList} onGetList={getMoneyList} />
-            <MoneyTable list={state.list} />
+            <Alert hidden={! state.errMsg} className='mt-4' variant='danger'>{state.errMsg}</Alert>
+            <Accordion defaultActiveKey={["summary", "filters"]} alwaysOpen className="mt-4">
+                <Accordion.Item eventKey="filters">
+                    <Accordion.Header>Filter</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneyFilter isLoadingList={state.isLoadingList}
+                            froms={state.froms}
+                            topics={state.topics}
+                            setErrMsg={setErrMsg}
+                            onGetList={getMoneyList} />
+                    </Accordion.Body>
+                </Accordion.Item>
+
+                <Accordion.Item eventKey="summary">
+                    <Accordion.Header>Ringkasan Bulan Ini</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneySummary summaryData={state.summary} />
+                    </Accordion.Body>
+                </Accordion.Item>
+
+                <Accordion.Item eventKey="chart">
+                    <Accordion.Header>Grafik per Kategori</Accordion.Header>
+                    <Accordion.Body>
+                        <MoneyChart list={state.list} categories={state.categories} />
+                    </Accordion.Body>
+                </Accordion.Item>
+            </Accordion>
+
+            <MoneyTable
+                categories={state.categories}
+                list={state.list}
+                getMoneyList={getMoneyList}
+                setErrMsg={setErrMsg}
+                isLoadingList={state.isLoadingList} />
         </Layout>
     );
 }

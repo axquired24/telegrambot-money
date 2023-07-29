@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Chatroom extends Model
 {
@@ -15,6 +16,11 @@ class Chatroom extends Model
     protected $fillable = [
         'id', 'type', 'title'
     ];
+
+    public function topics(): HasMany
+    {
+        return $this->hasMany(Topic::class);
+    }
 
     public $timestamps = false;
 }

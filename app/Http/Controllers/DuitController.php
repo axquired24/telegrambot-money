@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use App\Models\MoneyTrack;
 use App\Models\From;
 use App\Models\Chatroom;
+use App\Models\Topic;
 use App\Models\TelegramUpdate;
 use Exception;
 use Telegram\Bot\Laravel\Facades\Telegram;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Redis;
 
 class DuitController extends Controller
 {
@@ -54,7 +56,8 @@ class DuitController extends Controller
     }
 
     public function unsetWebHook() {
-        $response = Telegram::removeWebhook();
+        $response = Telegram::deleteWebhook();
+        // $response = Telegram::removeWebhook();
         return $response;
     }
 
@@ -83,7 +86,7 @@ class DuitController extends Controller
         return $messages;
     }
 
-    private function doSendReport($fromParam, $chatroomParam, $monthParam=null)
+    private function doSendReport($fromParam, $topicParam, $monthParam=null)
     {
         if (empty($monthParam)) {
             $monthParam = date('Y-m');
@@ -91,10 +94,11 @@ class DuitController extends Controller
 
         $list = MoneyTrack::listByMonth($monthParam)
             ->where('from_id', $fromParam)
-            ->where('chatroom_id', $chatroomParam)
+            ->where('topic_id', $topicParam)
             ->get();
 
         $from = From::find($fromParam);
+        $topic = Topic::find($topicParam);
 
         $summary = MoneyTrack::summaryByMonth($monthParam, $list);
         $balance = $this->rupiahFormat($summary['balance'], true);
@@ -104,18 +108,24 @@ class DuitController extends Controller
 
         $lines = collect([
             "Hi, *{$from->username}*",
-            "Laporan Bulan *{$fullDate}*:",
+            "Laporan *{$topic->name}*, Bulan *{$fullDate}*:",
             "",
             "*Saldo: {$balance}*",
             "Pengeluaran: {$expense}",
             "Pemasukan: {$income}"
         ]);
 
-        $send = $this->bot->sendMessage([
-            'chat_id' => $chatroomParam,
+        $param = [
+            'chat_id' => config('telegram.supergroup_id'),
             'text' => $lines->join(PHP_EOL),
             'parse_mode' => 'markdown'
-        ]);
+        ];
+        if(! empty($topic->topic_id)) {
+            $param['is_topic_message'] = true;
+            $param['message_thread_id'] = $topic->topic_id;
+        } // endif
+
+        $send = $this->bot->sendMessage($param);
         return $send->getMessageId();
     }
 
@@ -123,9 +133,9 @@ class DuitController extends Controller
     {
         $monthParam = empty($request->bulan) ? date('Y-m') : $request->bulan;
         $fromParam = intval($request->from);
-        $chatroomParam = intval($request->chatroom);
+        $topicParam = intval($request->topic);
 
-        return $this->doSendReport($fromParam, $chatroomParam, $monthParam);
+        return $this->doSendReport($fromParam, $topicParam, $monthParam);
     }
 
     private function parseShortCurrency($str='10k')
@@ -144,7 +154,8 @@ class DuitController extends Controller
     {
         try {
             $msg = json_decode($row->message);
-            $multiData = explode(PHP_EOL, $msg->text);
+            $msgText = $msg->text ?? '';
+            $multiData = explode(PHP_EOL, $msgText);
             $hasEmptyAmount = false;
 
             $from = From::updateOrCreate([
@@ -160,12 +171,18 @@ class DuitController extends Controller
                 'type' => $msg->chat->type,
                 'title' => $msg->chat->title
             ]);
+            $topic = Topic::updateOrCreate([
+                'topic_id' => $msg->message_thread_id ?? null,
+                'chatroom_id' => $chatroom->id,
+            ], [
+                'name' => $msg->reply_to_message->forum_topic_created->name ?? 'General',
+            ]);
 
             $parseAll = collect($multiData)->map(function ($item) use (
                 $msg,
                 &$hasEmptyAmount,
                 $from,
-                $chatroom
+                $topic
             ) {
                 $line = explode(' ', $item);
                 $description = collect($line)->filter(function ($val, $key) {
@@ -180,7 +197,7 @@ class DuitController extends Controller
                     'amount' => $amount,
                     'is_expense' => $amount < 0,
                     'from_id' => $from->id,
-                    'chatroom_id' => $chatroom->id,
+                    'topic_id' => $topic->id,
                 ];
 
                 if ($amount === 0) {
@@ -199,10 +216,12 @@ class DuitController extends Controller
             } // endif
 
             $row->parsed_at = now();
+            $row->has_error = 0;
             $row->save();
             return (object)[
                 'from_id' => $from->id,
-                'chatroom_id' => $chatroom->id,
+                'topic_id' => $topic->id,
+                'chatroom_id' => $topic->chatroom->id,
                 'parsed_count' => $parseAll->count(),
                 'has_error' => $hasEmptyAmount
             ];
@@ -211,11 +230,23 @@ class DuitController extends Controller
             $row->parsed_at = now();
             $row->save();
 
+            return $e;
+
             return (object)[
                 'parsed_count' => 0,
                 'has_error' => 1,
             ];
         }
+    }
+
+    public function parseSingleMsg(Request $request)
+    {
+        $row = TelegramUpdate::find($request->update_id);
+        $res = $this->parseTelegramMsg($row);
+        if($res->has_error) {
+            dump($this->parseTelegramMsg($row));
+        } // endif
+        return $res;
     }
 
     public function parseDailyUpdate()
@@ -227,18 +258,22 @@ class DuitController extends Controller
         return $rows->map(function ($row) {
             $result = ' > 0 rows parsed, failed process';
             $parseResult = $this->parseTelegramMsg($row);
+
             $from_id = null;
             $chatroom_id = null;
             $msg = $row->update_id . $result;
             $has_error = $parseResult->has_error;
 
-            if (! $parseResult->has_error) {
+            if (! $has_error) {
                 $result = ' > ' . $parseResult->parsed_count . ' rows parsed.';
                 $from_id = $parseResult->from_id;
                 $chatroom_id = $parseResult->chatroom_id;
+                $topic_id = $parseResult->topic_id;
+                return (object) compact('msg', 'from_id', 'topic_id', 'chatroom_id', 'has_error', 'result');
+            } else {
+                return $parseResult;
             } // endif
 
-            return (object) compact('msg', 'from_id', 'chatroom_id', 'has_error', 'result');
         });
     }
 
@@ -266,6 +301,21 @@ class DuitController extends Controller
 
     }
 
+    public function updateMoneyTrackCategory(Request $request)
+    {
+        $trx = MoneyTrack::find($request->id);
+        $newCategoryId = $request->money_category_id;
+
+        if($newCategoryId === 0) {
+            $trx->money_category_id = null;
+        } else {
+            $trx->money_category_id = $newCategoryId;
+        } // endif
+
+        $trx->save();
+        return $trx;
+    }
+
     public function editMoneyTrack(Request $request)
     {
         $id = $request->id;
@@ -281,7 +331,8 @@ class DuitController extends Controller
     {
         $track = MoneyTrack::find($request->id);
         $track->delete();
-        return redirect()->back();
+        return ['code' => 200];
+        // return redirect()->back();
     }
 
     public function webhookCallback(Request $request)
@@ -297,7 +348,7 @@ class DuitController extends Controller
         if ($parsedMessage->has_error) {
             return false;
         } else {
-            return $this->doSendReport($parsedMessage->from_id, $parsedMessage->chatroom_id);
+            return $this->doSendReport($parsedMessage->from_id, $parsedMessage->topic_id);
         } // endif
 
     }

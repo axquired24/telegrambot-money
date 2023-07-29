@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { Accordion, Col, Row } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,8 +12,9 @@ const MoneySummary = ({summaryData}) => {
     } = summaryData
 
     const goTo = useNavigate()
-    return (
-        <Row className="gap-3 mt-4 mx-auto">
+
+    const overallSum = (
+        <Row className="gap-3 mx-auto">
             <Col className="border border-danger rounded rounded-1 py-2 px-3">
                 <small className="fw-bold">Pengeluaran Bulan Ini</small>
                 <div className="fs-5 text-danger">{ expense }</div>
@@ -32,7 +33,9 @@ const MoneySummary = ({summaryData}) => {
                 <div className="fs-5 text-danger">{ failedParsed } item</div>
             </Col>
         </Row>
-    );
+    )
+
+    return overallSum
 }
 
 export default MoneySummary;
