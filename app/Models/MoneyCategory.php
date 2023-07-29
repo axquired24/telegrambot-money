@@ -19,5 +19,9 @@ class MoneyCategory extends Model
         'id', 'name', 'is_expense', 'color'
     ];
 
+    protected $casts = [
+        'is_expense' => 'integer'
+    ];
+
     public $timestamps = false;
 }
